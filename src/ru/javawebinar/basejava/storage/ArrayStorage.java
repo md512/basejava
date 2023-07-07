@@ -1,12 +1,12 @@
-package com.urise.webapp.storage;
+package ru.javawebinar.basejava.storage;
 
-import com.urise.webapp.model.Resume;
+import ru.javawebinar.basejava.model.Resume;
 import java.util.Arrays;
 
 /**
  * Array based storage for Resumes
  */
-public class ArrayStorage {
+public class ArrayStorage extends AbstractArrayStorage {
     private static final int STORAGE_LIMIT = 10000;
     private final Resume[] storage = new Resume[STORAGE_LIMIT];
     private int size;
@@ -18,24 +18,21 @@ public class ArrayStorage {
 
     public void update(Resume resume) {
         int index = getIndex(resume.getUuid());
-        if (index >= 0) {
-            storage[index] = resume;
+        if (index == -1) {
+            System.out.println("Resume " + resume.getUuid() + " not exist");
         } else {
-            System.out.println("Error: resume " + resume + " not in the storage.");
+            storage[index] = resume;
         }
     }
 
     public void save(Resume resume) {
-        if (size < STORAGE_LIMIT) {
-            int index = getIndex(resume.getUuid());
-            if (index < 0) {
-                storage[size] = resume;
-                size++;
-            } else {
-                System.out.println("Error: resume " + resume + " already in the storage.");
-            }
+        if (getIndex(resume.getUuid()) != -1) {
+            System.out.println("Resume " + resume.getUuid() + " already exist");
+        } else if (size >= STORAGE_LIMIT) {
+            System.out.println("Storage overflow");
         } else {
-            System.out.println("Error: storage is full.");
+            storage[size] = resume;
+            size++;
         }
     }
 
@@ -51,12 +48,12 @@ public class ArrayStorage {
 
     public void delete(String uuid) {
         int index = getIndex(uuid);
-        if (index >= 0) {
+        if (index == -1) {
+            System.out.println("Resume " + uuid + " not exist");
+        } else {
             storage[index] = storage[size - 1];
             storage[size - 1] = null;
             size--;
-        } else {
-            System.out.println("Error: resume " + uuid + " not in the storage.");
         }
     }
 
@@ -71,7 +68,7 @@ public class ArrayStorage {
         return size;
     }
 
-    private int getIndex(String uuid) {
+    protected int getIndex(String uuid) {
         for (int i = 0; i < size; i++) {
             if (uuid.equals(storage[i].getUuid())) {
                 return i;
