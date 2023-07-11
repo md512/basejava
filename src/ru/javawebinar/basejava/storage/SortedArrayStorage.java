@@ -5,29 +5,35 @@ import ru.javawebinar.basejava.model.Resume;
 import java.util.Arrays;
 
 public class SortedArrayStorage extends AbstractArrayStorage{
-    @Override
-    public void clear() {
-
-    }
 
     @Override
-    public void update(Resume r) {
-
-    }
-
-    @Override
-    public void save(Resume r) {
-
+    public void save(Resume resume) {
+        int index = getIndex(resume.getUuid());
+        if (index >= 0) {
+            System.out.println("Resume " + resume.getUuid() + " already exist");
+        }  else if (size >= STORAGE_LIMIT) {
+            System.out.println("Storage overflow");
+        } else {
+            int newIndex = Math.abs(index) - 1;
+            for (int i = size; i > newIndex; i--) {
+                storage[i] = storage[i - 1];
+            }
+            storage[newIndex] = resume;
+            size++;
+        }
     }
 
     @Override
     public void delete(String uuid) {
-
-    }
-
-    @Override
-    public Resume[] getAll() {
-        return new Resume[0];
+        int index = getIndex(uuid);
+        if (index < 0) {
+            System.out.println("Resume " + uuid + " not exist");
+        } else {
+            for (int i = index; i < size; i++) {
+                storage[i] = storage[i + 1];
+            }
+            size--;
+        }
     }
 
     @Override
