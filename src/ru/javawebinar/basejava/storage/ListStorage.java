@@ -2,42 +2,52 @@ package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.model.Resume;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class ListStorage extends AbstractStorage {
 
-
+    protected List<Resume> storage = new ArrayList<>();
 
     @Override
     public void clear() {
-
-    }
-
-    @Override
-    public void update(Resume r) {
-
-    }
-
-    @Override
-    public void save(Resume r) {
-
-    }
-
-    @Override
-    public Resume get(String uuid) {
-        return null;
-    }
-
-    @Override
-    public void delete(String uuid) {
-
+        storage.clear();
     }
 
     @Override
     public Resume[] getAll() {
-        return new Resume[0];
+        Resume[] result = new Resume[size()];
+        return storage.toArray(result);
     }
 
     @Override
     public int size() {
-        return 0;
+        return storage.size();
+    }
+
+    @Override
+    protected int getIndex(String uuid) {
+        return Collections.binarySearch(storage, new Resume(uuid));
+    }
+
+    @Override
+    protected Resume getElement(int index) {
+        return storage.get(index);
+    }
+
+    @Override
+    protected void deleteElement(int index) {
+        storage.remove(index);
+    }
+
+    @Override
+    protected void updateElement(int index, Resume resume) {
+        storage.set(index, resume);
+    }
+
+    @Override
+    protected void saveElement(int index, Resume resume) {
+        storage.add(Math.abs(index) - 1, resume);
     }
 }
