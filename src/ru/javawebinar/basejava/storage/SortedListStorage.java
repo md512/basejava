@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ListStorage extends AbstractStorage {
+public class SortedListStorage extends AbstractStorage {
 
     protected List<Resume> storage = new ArrayList<>();
 
