@@ -8,7 +8,7 @@ import java.util.List;
 
 public class SortedListStorage extends AbstractStorage {
 
-    protected List<Resume> storage = new ArrayList<>();
+    private final List<Resume> storage = new ArrayList<>();
 
     @Override
     public void clear() {
