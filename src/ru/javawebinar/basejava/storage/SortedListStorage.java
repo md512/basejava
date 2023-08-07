@@ -27,27 +27,33 @@ public class SortedListStorage extends AbstractStorage {
     }
 
     @Override
-    protected int getIndex(String uuid) {
+    protected boolean isExist(Object searchKey) {
+        int index = (Integer) searchKey;
+        return index >= 0;
+    }
+
+    @Override
+    protected Object getSearchKey(String uuid) {
         return Collections.binarySearch(storage, new Resume(uuid));
     }
 
     @Override
-    protected Resume getElement(int index) {
-        return storage.get(index);
+    protected Resume getElement(Object searchKey) {
+        return storage.get((Integer) searchKey);
     }
 
     @Override
-    protected void deleteElement(int index) {
-        storage.remove(index);
+    protected void deleteElement(Object searchKey) {
+        storage.remove((int) searchKey);
     }
 
     @Override
-    protected void updateElement(int index, Resume resume) {
-        storage.set(index, resume);
+    protected void updateElement(Object searchKey, Resume resume) {
+        storage.set((Integer) searchKey, resume);
     }
 
     @Override
-    protected void saveElement(int index, Resume resume) {
-        storage.add(Math.abs(index) - 1, resume);
+    protected void saveElement(Object searchKey, Resume resume) {
+        storage.add(Math.abs((Integer) searchKey) - 1, resume);
     }
 }
