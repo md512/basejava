@@ -13,10 +13,10 @@ public class MapStorageTest extends AbstractStorageTest {
 
     @Override
     public void getAll() throws Exception {
-        List<Resume> actual = Arrays.asList(storage.getAll());
-        Assert.assertEquals(3, actual.size());
-        Assert.assertTrue(actual.contains(RESUME_1));
-        Assert.assertTrue(actual.contains(RESUME_2));
-        Assert.assertTrue(actual.contains(RESUME_3));
+        List<Resume> resultList = Arrays.asList(storage.getAll());
+        Assert.assertEquals(3, resultList.size());
+        Assert.assertTrue(resultList.contains(RESUME_1));
+        Assert.assertTrue(resultList.contains(RESUME_2));
+        Assert.assertTrue(resultList.contains(RESUME_3));
     }
 }
