@@ -8,22 +8,22 @@ public abstract class AbstractStorage implements Storage {
 
     public final void update(Resume resume) {
         Object searchKey = getExistingSearchKey(resume.getUuid());
-        updateElement(searchKey, resume);
+        doUpdate(searchKey, resume);
     }
 
     public final void save(Resume resume) {
         Object searchKey = getNotExistingSearchKey(resume.getUuid());
-        saveElement(searchKey, resume);
+        doSave(searchKey, resume);
     }
 
     public Resume get(String uuid) {
         Object searchKey = getExistingSearchKey(uuid);
-        return getElement(searchKey);
+        return doGet(searchKey);
     }
 
     public final void delete(String uuid) {
         Object searchKey = getExistingSearchKey(uuid);
-        deleteElement(searchKey);
+        doDelete(searchKey);
     }
 
     private Object getExistingSearchKey(String uuid) {
@@ -48,11 +48,11 @@ public abstract class AbstractStorage implements Storage {
 
     protected abstract Object getSearchKey(String uuid);
 
-    protected abstract Resume getElement(Object searchKey);
+    protected abstract Resume doGet(Object searchKey);
 
-    protected abstract void deleteElement(Object searchKey);
+    protected abstract void doDelete(Object searchKey);
 
-    protected abstract void updateElement(Object searchKey, Resume resume);
+    protected abstract void doUpdate(Object searchKey, Resume resume);
 
-    protected abstract void saveElement(Object searchKey, Resume resume);
+    protected abstract void doSave(Object searchKey, Resume resume);
 }
