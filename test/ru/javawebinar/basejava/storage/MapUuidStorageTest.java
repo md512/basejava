@@ -6,9 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class MapStorageTest extends AbstractStorageTest {
-    public MapStorageTest() {
-        super(new MapStorage());
+public class MapUuidStorageTest extends AbstractStorageTest {
+    public MapUuidStorageTest() {
+        super(new MapUuidStorage());
     }
 
     @Override
