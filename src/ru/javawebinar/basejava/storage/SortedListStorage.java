@@ -16,9 +16,8 @@ public class SortedListStorage extends AbstractStorage {
     }
 
     @Override
-    public Resume[] getAll() {
-        Resume[] result = new Resume[size()];
-        return storage.toArray(result);
+    public List<Resume> getAllSorted() {
+        return storage;
     }
 
     @Override

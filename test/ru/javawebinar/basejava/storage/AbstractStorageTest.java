@@ -7,8 +7,6 @@ import ru.javawebinar.basejava.exception.ExistStorageException;
 import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.Resume;
 
-import static org.junit.Assert.*;
-
 public class AbstractStorageTest {
 
     protected final Storage storage;
@@ -16,10 +14,14 @@ public class AbstractStorageTest {
     protected static final String UUID_2 = "uuid2";
     protected static final String UUID_3 = "uuid3";
     protected static final String UUID_4 = "uuid4";
-    protected static final Resume RESUME_1 = new Resume(UUID_1);
-    protected static final Resume RESUME_2 = new Resume(UUID_2);
-    protected static final Resume RESUME_3 = new Resume(UUID_3);
-    protected static final Resume RESUME_4 = new Resume(UUID_4);
+    protected static final String FULL_NAME_1 = "Ivan Ivanov";
+    protected static final String FULL_NAME_2 = "Petr Petrov";
+    protected static final String FULL_NAME_3 = "Sidor Sidorov";
+    protected static final String FULL_NAME_4 = "John Smith";
+    protected static final Resume RESUME_1 = new Resume(UUID_1, FULL_NAME_1);
+    protected static final Resume RESUME_2 = new Resume(UUID_2, FULL_NAME_2);
+    protected static final Resume RESUME_3 = new Resume(UUID_3, FULL_NAME_3);
+    protected static final Resume RESUME_4 = new Resume(UUID_4, FULL_NAME_4);
 
     protected AbstractStorageTest(Storage storage) {
         this.storage = storage;
@@ -42,20 +44,20 @@ public class AbstractStorageTest {
     public void clear() throws Exception {
         storage.clear();
         assertSize(0);
-        Assert.assertArrayEquals(new Resume[0], storage.getAll());
+        Assert.assertArrayEquals(new Resume[0], storage.getAllSorted().toArray(new Resume[0]));
     }
 
     @Test
     public void update() throws Exception {
-        Resume resume = new Resume(UUID_1);
+        Resume resume = new Resume(UUID_1, FULL_NAME_1);
         storage.update(resume);
         Assert.assertSame(resume, storage.get(UUID_1));
     }
 
     @Test
-    public void getAll() throws Exception {
+    public void getAllSorted() throws Exception {
         Resume[] actual = {RESUME_1, RESUME_2, RESUME_3};
-        Assert.assertArrayEquals(actual, storage.getAll());
+        Assert.assertArrayEquals(actual, storage.getAllSorted().toArray(new Resume[0]));
     }
 
     @Test

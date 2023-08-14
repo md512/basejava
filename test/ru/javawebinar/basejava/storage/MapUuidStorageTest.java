@@ -12,8 +12,8 @@ public class MapUuidStorageTest extends AbstractStorageTest {
     }
 
     @Override
-    public void getAll() throws Exception {
-        List<Resume> resultList = Arrays.asList(storage.getAll());
+    public void getAllSorted() throws Exception {
+        List<Resume> resultList = Arrays.asList(storage.getAllSorted().toArray(new Resume[0]));
         Assert.assertEquals(3, resultList.size());
         Assert.assertTrue(resultList.contains(RESUME_1));
         Assert.assertTrue(resultList.contains(RESUME_2));
