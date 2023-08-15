@@ -28,9 +28,4 @@ public class SortedArrayStorage extends AbstractArrayStorage{
         }
 
     }
-
-    @Override
-    public List<Resume> getAllSorted() {
-        return Arrays.asList(Arrays.copyOf(storage, size));
-    }
 }

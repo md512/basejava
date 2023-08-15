@@ -4,6 +4,7 @@ import ru.javawebinar.basejava.exception.StorageException;
 import ru.javawebinar.basejava.model.Resume;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Array based storage for Resumes
@@ -56,6 +57,11 @@ public abstract class AbstractArrayStorage extends AbstractStorage {
     protected boolean isExist(Object searchKey) {
         int index = (Integer) searchKey;
         return index >= 0;
+    }
+
+    @Override
+    public List<Resume> getStorageAsList() {
+        return Arrays.asList(Arrays.copyOf(storage, size));
     }
 
     protected abstract void fillDeletedElement(int index);

@@ -16,11 +16,6 @@ public class SortedListStorage extends AbstractStorage {
     }
 
     @Override
-    public List<Resume> getAllSorted() {
-        return storage;
-    }
-
-    @Override
     public int size() {
         return storage.size();
     }
@@ -54,5 +49,10 @@ public class SortedListStorage extends AbstractStorage {
     @Override
     protected void doSave(Object searchKey, Resume resume) {
         storage.add(Math.abs((Integer) searchKey) - 1, resume);
+    }
+
+    @Override
+    protected List<Resume> getStorageAsList() {
+        return storage;
     }
 }
