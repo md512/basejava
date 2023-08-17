@@ -4,11 +4,13 @@ import ru.javawebinar.basejava.model.Resume;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class SortedListStorage extends AbstractStorage {
 
     private final List<Resume> storage = new ArrayList<>();
+    private static final Comparator<Resume> RESUME_COMPARATOR = (o1, o2) -> o1.getUuid().compareTo(o2.getUuid());
 
     @Override
     public void clear() {
@@ -28,7 +30,7 @@ public class SortedListStorage extends AbstractStorage {
 
     @Override
     protected Object getSearchKey(String uuid) {
-        return Collections.binarySearch(storage, new Resume(uuid));
+        return Collections.binarySearch(storage, new Resume(uuid), RESUME_COMPARATOR);
     }
 
     @Override
