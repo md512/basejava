@@ -2,6 +2,7 @@ package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.model.Resume;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,46 +13,48 @@ public class MapResumeStorage extends AbstractStorage {
 
     @Override
     protected boolean isExist(Object searchKey) {
-        return false;
+        return storage.containsValue((Resume) searchKey);
     }
 
     @Override
     protected Object getSearchKey(String uuid) {
-        return null;
+        return storage.get(uuid);
     }
 
     @Override
     protected Resume doGet(Object searchKey) {
-        return null;
+        return searchKey != null ? (Resume) searchKey : null;
     }
 
     @Override
     protected void doDelete(Object searchKey) {
-
+        Resume keyResume = (Resume) searchKey;
+        storage.remove(keyResume.getUuid());
     }
 
     @Override
     protected void doUpdate(Object searchKey, Resume resume) {
-
+        Resume keyResume = (Resume) searchKey;
+        storage.put(keyResume.getUuid(), resume);
     }
 
     @Override
     protected void doSave(Object searchKey, Resume resume) {
-
+        storage.put(resume.getUuid(), resume);
     }
 
     @Override
     protected List<Resume> getStorageAsList() {
-        return null;
+        return new ArrayList<>(storage.values());
     }
 
     @Override
     public void clear() {
-
+        storage.clear();
     }
 
     @Override
     public int size() {
-        return 0;
+        return storage.size();
     }
 }
