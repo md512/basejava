@@ -38,8 +38,6 @@ public abstract class AbstractStorage implements Storage {
         return list;
     }
 
-    protected abstract List<Resume> getStorageAsList();
-
     private Object getExistingSearchKey(String uuid) {
         Object searchKey = getSearchKey(uuid);
         if (!isExist(searchKey)) {
@@ -69,5 +67,7 @@ public abstract class AbstractStorage implements Storage {
     protected abstract void doUpdate(Object searchKey, Resume resume);
 
     protected abstract void doSave(Object searchKey, Resume resume);
+
+    protected abstract List<Resume> getStorageAsList();
 
 }

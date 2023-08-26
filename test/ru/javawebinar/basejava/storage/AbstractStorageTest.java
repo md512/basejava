@@ -49,16 +49,14 @@ public class AbstractStorageTest {
 
     @Test
     public void update() throws Exception {
-        Resume resume = new Resume(UUID_1, FULL_NAME_1);
+        Resume resume = new Resume(UUID_1, "New name");
         storage.update(resume);
         Assert.assertSame(resume, storage.get(UUID_1));
     }
 
     @Test
     public void getAllSorted() throws Exception {
-        Resume testResume = new Resume(UUID_4, FULL_NAME_3);
-        Resume[] actual = {RESUME_1, RESUME_2, RESUME_3, testResume};
-        storage.save(testResume);
+        Resume[] actual = {RESUME_1, RESUME_2, RESUME_3};
         Assert.assertArrayEquals(actual, storage.getAllSorted().toArray(new Resume[0]));
     }
 

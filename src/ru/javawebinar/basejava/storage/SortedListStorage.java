@@ -30,7 +30,7 @@ public class SortedListStorage extends AbstractStorage {
 
     @Override
     protected Object getSearchKey(String uuid) {
-        return Collections.binarySearch(storage, new Resume(uuid, null), RESUME_COMPARATOR);
+        return Collections.binarySearch(storage, new Resume(uuid, "name"), RESUME_COMPARATOR);
     }
 
     @Override
