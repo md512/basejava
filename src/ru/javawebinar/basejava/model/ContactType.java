@@ -4,9 +4,9 @@ public enum ContactType {
     PHONE("Тел."),
     SKYPE("Skype"),
     EMAIL("Почта"),
-    LINKEDIN("LinkedIn"),
-    GITHUB("GitHub"),
-    STACKOVERFLOW("Stackoverflow"),
+    LINKEDIN("Профиль LinkedIn"),
+    GITHUB("Профиль GitHub"),
+    STACKOVERFLOW("Профиль Stackoverflow"),
     WEBSITE("Домашняя страница");
 
     private String title;
