@@ -7,4 +7,8 @@ public class TextSection extends Section {
         this.text = text;
     }
 
+    @Override
+    public String toString() {
+        return text;
+    }
 }
