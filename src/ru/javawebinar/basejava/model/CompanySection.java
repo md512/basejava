@@ -10,6 +10,10 @@ public class CompanySection extends Section {
         companies.add(company);
     }
 
+    public List<Company> getCompanies() {
+        return companies;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -17,5 +21,20 @@ public class CompanySection extends Section {
             sb.append(company).append("\n");
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CompanySection that = (CompanySection) o;
+
+        return companies.equals(that.companies);
+    }
+
+    @Override
+    public int hashCode() {
+        return companies.hashCode();
     }
 }
