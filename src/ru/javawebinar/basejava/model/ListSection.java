@@ -1,18 +1,24 @@
 package ru.javawebinar.basejava.model;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ListSection extends Section {
 
-    private final List<String> list = new ArrayList<>();
+    private final List<String> items;
 
-    public void addToList(String str) {
-        list.add(str);
+    public ListSection(List<String> items) {
+        Objects.requireNonNull(items, "items must not be null");
+        this.items = items;
     }
 
-    public List<String> getList() {
-        return list;
+    public List<String> getItems() {
+        return items;
+    }
+
+    @Override
+    public String toString() {
+        return items.toString();
     }
 
     @Override
@@ -22,20 +28,11 @@ public class ListSection extends Section {
 
         ListSection that = (ListSection) o;
 
-        return list.equals(that.list);
+        return items.equals(that.items);
     }
 
     @Override
     public int hashCode() {
-        return list.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (String str : list) {
-            sb.append(str).append("\n");
-        }
-        return sb.toString();
+        return items.hashCode();
     }
 }
