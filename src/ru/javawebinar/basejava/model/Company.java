@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Organization {
+public class Company {
     private final Link homePage;
     private final List<Period> periods = new ArrayList<>();
 
-    public Organization(String name, String url, LocalDate startDate, LocalDate endDate, String title, String description) {
+    public Company(String name, String url, LocalDate startDate, LocalDate endDate, String title, String description) {
         Objects.requireNonNull(startDate, "startDate must not be null");
         Objects.requireNonNull(endDate, "endDate must not be null");
         Objects.requireNonNull(title, "title must not be null");
@@ -43,7 +43,7 @@ public class Organization {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Organization that = (Organization) o;
+        Company that = (Company) o;
 
         if (!homePage.equals(that.homePage)) return false;
         return periods.equals(that.periods);
