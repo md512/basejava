@@ -15,7 +15,7 @@ public class MainFile {
             throw new RuntimeException("Error", e);
         }
 
-        /*
+
         File dir = new File("./src/ru/javawebinar/basejava");
         System.out.println(dir.isDirectory());
         String[] list = dir.list();
@@ -24,7 +24,6 @@ public class MainFile {
                 System.out.println(name);
             }
         }
-        */
 
         try (FileInputStream fis = new FileInputStream(filePath)) {
             System.out.println(fis.read());
@@ -32,18 +31,20 @@ public class MainFile {
             throw new RuntimeException(e);
         }
 
-        File dir = new File("./src/ru/javawebinar/basejava");
-        File[] files = dir.listFiles();
-        String[] list = dir.list();
-        if (list != null) {
-            for (String name : list) {
-                System.out.println(name);
-            }
-        }
-
+        System.out.println();
+        System.out.println("Printing all files in the project:");
+        System.out.println();
+        printFiles(dir);
     }
 
-    public void recursiveChecking(File file) {
+    public static void printFiles(File directory) {
+        for (File file : directory.listFiles()) {
+            if (file.isDirectory()) {
+                printFiles(file);
+            } else {
+                System.out.println(file.getName());
+            }
+        }
 
     }
 }
