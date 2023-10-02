@@ -11,7 +11,7 @@ import java.util.Objects;
 
 public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
-    private File directory;
+    private final File directory;
 
     protected AbstractFileStorage(File directory) {
         Objects.requireNonNull(directory, "directory must not be null");
@@ -45,7 +45,10 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
     @Override
     protected void doDelete(File file) {
-        file.delete();
+        boolean isFileDeleted = file.delete();
+        if (!isFileDeleted) {
+            throw new StorageException("Cannot delete file", file.getName());
+        }
     }
 
     @Override
@@ -70,7 +73,11 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
     @Override
     protected List<Resume> getStorageAsList() {
         List<Resume> list = new ArrayList<>();
-        for (File file : directory.listFiles()) {
+        File[] files = directory.listFiles();
+        if (files == null) {
+            throw new StorageException("IO error", directory.getName());
+        }
+        for (File file : files) {
             try {
                 list.add(doRead(file));
             } catch (IOException e) {
@@ -82,14 +89,22 @@ public abstract class AbstractFileStorage extends AbstractStorage<File> {
 
     @Override
     public void clear() {
-        for (File file : directory.listFiles()) {
-            file.delete();
+        File[] files = directory.listFiles();
+        if (files == null) {
+            throw new StorageException("IO error", directory.getName());
+        }
+        for (File file : files) {
+            doDelete(file);
         }
     }
 
     @Override
     public int size() {
-        return directory.listFiles().length;
+        File[] files = directory.listFiles();
+        if (files == null) {
+            throw new StorageException("IO error", directory.getName());
+        }
+        return files.length;
     }
 
     protected abstract void doWrite(Resume resume, File file) throws IOException;
