@@ -54,7 +54,7 @@ public class SortedListStorage extends AbstractStorage<Integer> {
     }
 
     @Override
-    protected List<Resume> getStorageAsList() {
+    protected List<Resume> doCopyAll() {
         return storage;
     }
 }
