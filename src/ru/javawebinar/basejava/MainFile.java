@@ -32,23 +32,26 @@ public class MainFile {
         }
 
         System.out.println();
-        System.out.println("Printing all files in the project:");
-        System.out.println();
-        printFiles(dir);
+        printFiles(dir, 0);
     }
 
-    public static void printFiles(File directory) {
+    public static void printFiles(File directory, int level) {
         File[] files = directory.listFiles();
+
+        StringBuilder indent = new StringBuilder();
+        for (int i = 0; i < level; i++) {
+            indent.append("  ");
+        }
+
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    System.out.println("Directory: " + file.getName());
-                    printFiles(file);
+                    System.out.println(indent + "Directory: " + file.getName());
+                    printFiles(file, level + 1);
                 } else {
-                    System.out.println("   File: " + file.getName());
+                    System.out.println(indent + "File: " + file.getName());
                 }
             }
         }
-
     }
 }
