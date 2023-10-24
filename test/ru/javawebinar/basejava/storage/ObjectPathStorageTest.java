@@ -2,8 +2,8 @@ package ru.javawebinar.basejava.storage;
 
 import ru.javawebinar.basejava.storage.serializer.ObjectStreamSerializer;
 
-public class PathStorageTest extends AbstractStorageTest{
-    public PathStorageTest() {
+public class ObjectPathStorageTest extends AbstractStorageTest{
+    public ObjectPathStorageTest() {
         super(new PathStorage(STORAGE_DIR.getPath(), new ObjectStreamSerializer()));
     }
 }
