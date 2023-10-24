@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PathStorage extends AbstractStorage<Path>{
 
@@ -26,10 +27,6 @@ public class PathStorage extends AbstractStorage<Path>{
         this.serializer = serializer;
     }
 
-    public void setSerializationStrategy(SerializationStrategy serializer) {
-        this.serializer = serializer;
-    }
-
     @Override
     protected boolean isExist(Path path) {
         return Files.exists(path);
@@ -37,7 +34,7 @@ public class PathStorage extends AbstractStorage<Path>{
 
     @Override
     protected Path getSearchKey(String uuid) {
-        return Paths.get(directory.toString(), uuid);
+        return directory.resolve(uuid);
     }
 
     @Override
@@ -79,32 +76,24 @@ public class PathStorage extends AbstractStorage<Path>{
 
     @Override
     protected List<Resume> doCopyAll() {
-        List<Resume> list = null;
-        try {
-            list = Files.list(directory).map(this::doGet).collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new StorageException("Directory read error", null, e);
-        }
-        return list;
+        return getAllPaths().map(this::doGet).collect(Collectors.toList());
     }
 
     @Override
     public void clear() {
-        try {
-            Files.list(directory).forEach(this::doDelete);
-        } catch (IOException e) {
-            throw new StorageException("Path delete error", null);
-        }
+        getAllPaths().forEach(this::doDelete);
     }
 
     @Override
     public int size() {
-        long size = 0;
+        return (int) getAllPaths().count();
+    }
+
+    private Stream<Path> getAllPaths() {
         try {
-            size = Files.list(directory).count();
+            return Files.list(directory);
         } catch (IOException e) {
             throw new StorageException("Directory read error", null, e);
         }
-        return (int) size;
     }
 }

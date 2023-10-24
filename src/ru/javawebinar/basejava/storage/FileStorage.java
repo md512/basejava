@@ -26,10 +26,6 @@ public class FileStorage extends AbstractStorage<File>{
         this.serializer = serializer;
     }
 
-    public void setSerializationStrategy(SerializationStrategy serializer) {
-        this.serializer = serializer;
-    }
-
     @Override
     protected boolean isExist(File file) {
         return file.exists();
@@ -78,11 +74,7 @@ public class FileStorage extends AbstractStorage<File>{
     @Override
     protected List<Resume> doCopyAll() {
         List<Resume> list = new ArrayList<>();
-        File[] files = directory.listFiles();
-        if (files == null) {
-            throw new StorageException("IO error", directory.getName());
-        }
-        for (File file : files) {
+        for (File file : getAllFiles()) {
             list.add(doGet(file));
         }
         return list;
@@ -90,21 +82,21 @@ public class FileStorage extends AbstractStorage<File>{
 
     @Override
     public void clear() {
-        File[] files = directory.listFiles();
-        if (files == null) {
-            throw new StorageException("IO error", directory.getName());
-        }
-        for (File file : files) {
+        for (File file : getAllFiles()) {
             doDelete(file);
         }
     }
 
     @Override
     public int size() {
-        String[] list = directory.list();
-        if (list == null) {
-            throw new StorageException("Directory read error", null);
+        return getAllFiles().length;
+    }
+
+    private File[] getAllFiles() {
+        File[] files = directory.listFiles();
+        if (files == null) {
+            throw new StorageException("IO error", directory.getName());
         }
-        return list.length;
+        return files;
     }
 }
