@@ -6,6 +6,9 @@ public class TextSection extends Section {
     private static final long SerialVersionUID = 1L;
     private String content;
 
+    public TextSection() {
+    }
+
     public TextSection(String content) {
         Objects.requireNonNull(content, "content must not be null");
         this.content = content;
