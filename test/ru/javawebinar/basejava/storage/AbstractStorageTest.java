@@ -8,6 +8,10 @@ import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.Resume;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class AbstractStorageTest {
 
@@ -55,13 +59,14 @@ public class AbstractStorageTest {
     public void update() throws Exception {
         Resume resume = new Resume(UUID_1, "New name");
         storage.update(resume);
-        Assert.assertEquals(resume, storage.get(UUID_1));
+        assertEquals(resume, storage.get(UUID_1));
     }
 
     @Test
     public void getAllSorted() throws Exception {
-        Resume[] actual = {RESUME_1, RESUME_2, RESUME_3};
-        Assert.assertArrayEquals(actual, storage.getAllSorted().toArray(new Resume[0]));
+        List<Resume> list = storage.getAllSorted();
+        assertEquals(3, list.size());
+        assertEquals(list, Arrays.asList(RESUME_1, RESUME_2, RESUME_3));
     }
 
     @Test
@@ -106,10 +111,10 @@ public class AbstractStorageTest {
     }
 
     private void assertSize(int size) {
-        Assert.assertEquals(size, storage.size());
+        assertEquals(size, storage.size());
     }
 
     private void assertGet(Resume resume) {
-        Assert.assertEquals(resume, storage.get(resume.getUuid()));
+        assertEquals(resume, storage.get(resume.getUuid()));
     }
 }
