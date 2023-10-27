@@ -45,7 +45,7 @@ public class Organization implements Serializable {
         return homePage;
     }
 
-    public List<Position> getPeriods() {
+    public List<Position> getPositions() {
         return positions;
     }
 
