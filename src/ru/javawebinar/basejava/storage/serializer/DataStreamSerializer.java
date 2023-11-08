@@ -4,9 +4,7 @@ import ru.javawebinar.basejava.model.*;
 
 import java.io.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataStreamSerializer implements SerializationStrategy {
 
@@ -18,14 +16,15 @@ public class DataStreamSerializer implements SerializationStrategy {
 
             Map<ContactType, String> contacts = resume.getContacts();
             dos.writeInt(contacts.size());
-            for (Map.Entry<ContactType, String> entry : contacts.entrySet()) {
+            writeWithException(contacts.entrySet(), dos, entry -> {
                 dos.writeUTF(entry.getKey().name());
                 dos.writeUTF(entry.getValue());
-            }
+            });
 
             Map<SectionType, Section> sections = resume.getSections();
             dos.writeInt(sections.size());
-            for (Map.Entry<SectionType, Section> entry : sections.entrySet()) {
+
+            writeWithException(sections.entrySet(), dos, entry -> {
                 SectionType key = entry.getKey();
                 Section value = entry.getValue();
                 dos.writeUTF(key.name());
@@ -36,16 +35,32 @@ public class DataStreamSerializer implements SerializationStrategy {
                         break;
                     case ACHIEVEMENT:
                     case QUALIFICATIONS:
-                        writeList(dos, (ListSection) value);
+                        List<String> items = ((ListSection) value).getItems();
+                        dos.writeInt(items.size());
+                        writeWithException(items, dos, dos::writeUTF);
                         break;
                     case EXPERIENCE:
                     case EDUCATION:
-                        writeOrganizations(dos, (OrganizationSection) value);
+                        List<Organization> organizations = ((OrganizationSection) value).getOrganizations();
+                        dos.writeInt(organizations.size());
+                        writeWithException(organizations, dos, org -> {
+                            dos.writeUTF(org.getHomePage().getName());
+                            String url = org.getHomePage().getUrl();
+                            dos.writeUTF(url != null ? url : "null");
+                            dos.writeInt(org.getPositions().size());
+                            writeWithException(org.getPositions(), dos, position -> {
+                                dos.writeUTF(position.getStartDate().toString());
+                                dos.writeUTF(position.getEndDate().toString());
+                                dos.writeUTF(position.getTitle());
+                                String description = position.getDescription();
+                                dos.writeUTF(description != null ? description : "null");
+                            });
+                        });
                         break;
                     default:
                         break;
                 }
-            }
+            });
         }
     }
 
@@ -85,32 +100,6 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
     }
 
-    private void writeList(DataOutputStream dos, ListSection section) throws IOException {
-        List<String> items = section.getItems();
-        dos.writeInt(items.size());
-        for (String item : items) {
-            dos.writeUTF(item);
-        }
-    }
-
-    private void writeOrganizations(DataOutputStream dos, OrganizationSection section) throws IOException {
-        List<Organization> organizations = section.getOrganizations();
-        dos.writeInt(organizations.size());
-        for(Organization org : organizations) {
-            dos.writeUTF(org.getHomePage().getName());
-            String url = org.getHomePage().getUrl();
-            dos.writeUTF(url != null ? url : "null");
-            dos.writeInt(org.getPositions().size());
-            for (Organization.Position position : org.getPositions()) {
-                dos.writeUTF(position.getStartDate().toString());
-                dos.writeUTF(position.getEndDate().toString());
-                dos.writeUTF(position.getTitle());
-                String description = position.getDescription();
-                dos.writeUTF(description != null ? description : "null");
-            }
-        }
-    }
-
     private List<String> readList(DataInputStream dis) throws IOException {
         int size = dis.readInt();
         List<String> list = new ArrayList<>();
@@ -146,5 +135,18 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
         return organizations;
     }
+
+    private <T> void writeWithException(Collection<T> collection, DataOutputStream dos, ExcConsumer<T> action) throws IOException{
+        Objects.requireNonNull(action);
+        for (T item : collection) {
+            action.accept(item);
+        }
+
+    }
+}
+
+@FunctionalInterface
+interface ExcConsumer<T> {
+    void accept(T t) throws IOException;
 }
 
