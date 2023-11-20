@@ -4,7 +4,10 @@ import ru.javawebinar.basejava.model.*;
 
 import java.io.*;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 public class DataStreamSerializer implements SerializationStrategy {
 
@@ -14,17 +17,12 @@ public class DataStreamSerializer implements SerializationStrategy {
             dos.writeUTF(resume.getUuid());
             dos.writeUTF(resume.getFullName());
 
-            Map<ContactType, String> contacts = resume.getContacts();
-            dos.writeInt(contacts.size());
-            writeWithException(contacts.entrySet(), dos, entry -> {
+            writeWithException(resume.getContacts().entrySet(), dos, entry -> {
                 dos.writeUTF(entry.getKey().name());
                 dos.writeUTF(entry.getValue());
             });
 
-            Map<SectionType, Section> sections = resume.getSections();
-            dos.writeInt(sections.size());
-
-            writeWithException(sections.entrySet(), dos, entry -> {
+            writeWithException(resume.getSections().entrySet(), dos, entry -> {
                 SectionType key = entry.getKey();
                 Section value = entry.getValue();
                 dos.writeUTF(key.name());
@@ -35,19 +33,14 @@ public class DataStreamSerializer implements SerializationStrategy {
                         break;
                     case ACHIEVEMENT:
                     case QUALIFICATIONS:
-                        List<String> items = ((ListSection) value).getItems();
-                        dos.writeInt(items.size());
-                        writeWithException(items, dos, dos::writeUTF);
+                        writeWithException(((ListSection) value).getItems(), dos, dos::writeUTF);
                         break;
                     case EXPERIENCE:
                     case EDUCATION:
-                        List<Organization> organizations = ((OrganizationSection) value).getOrganizations();
-                        dos.writeInt(organizations.size());
-                        writeWithException(organizations, dos, org -> {
+                        writeWithException(((OrganizationSection) value).getOrganizations(), dos, org -> {
                             dos.writeUTF(org.getHomePage().getName());
                             String url = org.getHomePage().getUrl();
                             dos.writeUTF(url != null ? url : "null");
-                            dos.writeInt(org.getPositions().size());
                             writeWithException(org.getPositions(), dos, position -> {
                                 dos.writeUTF(position.getStartDate().toString());
                                 dos.writeUTF(position.getEndDate().toString());
@@ -71,13 +64,11 @@ public class DataStreamSerializer implements SerializationStrategy {
             String fullName = dis.readUTF();
             Resume resume = new Resume(uuid, fullName);
 
-            int sizeContacts = dis.readInt();
-            for (int i = 0; i < sizeContacts; i++) {
+            readWithException(dis, () -> {
                 resume.addContact(ContactType.valueOf(dis.readUTF()), dis.readUTF());
-            }
+            });
 
-            int sizeSections = dis.readInt();
-            for (int i = 0; i < sizeSections; i++) {
+            readWithException(dis, () -> {
                 SectionType sectionType = SectionType.valueOf(dis.readUTF());
                 switch (sectionType) {
                     case OBJECTIVE:
@@ -86,54 +77,62 @@ public class DataStreamSerializer implements SerializationStrategy {
                         break;
                     case ACHIEVEMENT:
                     case QUALIFICATIONS:
-                        resume.addSection(sectionType, new ListSection(readWithException(dis, dis::readUTF)));
+                        resume.addSection(sectionType, new ListSection(readSectionWithException(dis, dis::readUTF)));
                         break;
                     case EXPERIENCE:
                     case EDUCATION:
-                        resume.addSection(sectionType, new OrganizationSection(readWithException(dis, () -> {
-                                String name = dis.readUTF();
-                                String url = dis.readUTF();
-                                if (url.equals("null")) {
-                                    url = null;
+                        resume.addSection(sectionType, new OrganizationSection(readSectionWithException(dis, () -> {
+                            String name = dis.readUTF();
+                            String url = dis.readUTF();
+                            if (url.equals("null")) {
+                                url = null;
+                            }
+                            Link homePage = new Link(name, url);
+                            List<Organization.Position> positions = readSectionWithException(dis, () -> {
+                                LocalDate startDate = LocalDate.parse(dis.readUTF());
+                                LocalDate endDate = LocalDate.parse(dis.readUTF());
+                                String title = dis.readUTF();
+                                String description = dis.readUTF();
+                                if (description.equals("null")) {
+                                    description = null;
                                 }
-                                Link homePage = new Link(name, url);
-                                List<Organization.Position> positions = readWithException(dis, () -> {
-                                    LocalDate startDate = LocalDate.parse(dis.readUTF());
-                                    LocalDate endDate = LocalDate.parse(dis.readUTF());
-                                    String title = dis.readUTF();
-                                    String description = dis.readUTF();
-                                    if (description.equals("null")) {
-                                        description = null;
-                                    }
-                                    return new Organization.Position(startDate, endDate, title, description);
-                                });
-                               return new Organization(homePage, positions);
+                                return new Organization.Position(startDate, endDate, title, description);
+                            });
+                            return new Organization(homePage, positions);
                         })));
                         break;
                     default:
                         break;
                 }
-            }
+            });
             return resume;
         }
     }
 
     private <T> void writeWithException(Collection<T> collection, DataOutputStream dos, DataWriter<T> action) throws IOException{
         Objects.requireNonNull(action);
+        dos.writeInt(collection.size());
         for (T item : collection) {
             action.accept(item);
         }
-
     }
 
-    private <T> List<T> readWithException(DataInputStream dis, DataReader<T> dataReader) throws IOException {
-        Objects.requireNonNull(dataReader);
+    private <T> List<T> readSectionWithException(DataInputStream dis, SectionReader<T> sectionReader) throws IOException {
+        Objects.requireNonNull(sectionReader);
         int size = dis.readInt();
         List<T> list = new ArrayList<>();
         for (int i = 0; i < size; i++) {
-            list.add(dataReader.get());
+            list.add(sectionReader.get());
         }
         return list;
+    }
+
+    private void readWithException(DataInputStream dis, DataReader dataReader) throws IOException {
+        Objects.requireNonNull(dataReader);
+        int size = dis.readInt();
+        for (int i = 0; i < size; i++) {
+            dataReader.read();
+        }
     }
 }
 
@@ -143,9 +142,11 @@ interface DataWriter<T> {
 }
 
 @FunctionalInterface
-interface DataReader<T> {
+interface SectionReader<T> {
     T get() throws IOException;
 }
 
-
-
+@FunctionalInterface
+interface DataReader {
+    void read() throws IOException;
+}
