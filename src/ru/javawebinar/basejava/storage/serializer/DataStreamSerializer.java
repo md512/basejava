@@ -86,11 +86,29 @@ public class DataStreamSerializer implements SerializationStrategy {
                         break;
                     case ACHIEVEMENT:
                     case QUALIFICATIONS:
-                        resume.addSection(sectionType, new ListSection(readList(dis)));
+                        resume.addSection(sectionType, new ListSection(readWithException(dis, dis::readUTF)));
                         break;
                     case EXPERIENCE:
                     case EDUCATION:
-                        resume.addSection(sectionType, new OrganizationSection(readOrganizations(dis)));
+                        resume.addSection(sectionType, new OrganizationSection(readWithException(dis, () -> {
+                                String name = dis.readUTF();
+                                String url = dis.readUTF();
+                                if (url.equals("null")) {
+                                    url = null;
+                                }
+                                Link homePage = new Link(name, url);
+                                List<Organization.Position> positions = readWithException(dis, () -> {
+                                    LocalDate startDate = LocalDate.parse(dis.readUTF());
+                                    LocalDate endDate = LocalDate.parse(dis.readUTF());
+                                    String title = dis.readUTF();
+                                    String description = dis.readUTF();
+                                    if (description.equals("null")) {
+                                        description = null;
+                                    }
+                                    return new Organization.Position(startDate, endDate, title, description);
+                                });
+                               return new Organization(homePage, positions);
+                        })));
                         break;
                     default:
                         break;
@@ -100,53 +118,34 @@ public class DataStreamSerializer implements SerializationStrategy {
         }
     }
 
-    private List<String> readList(DataInputStream dis) throws IOException {
-        int size = dis.readInt();
-        List<String> list = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            list.add(dis.readUTF());
-        }
-        return list;
-    }
-
-    private List<Organization> readOrganizations(DataInputStream dis) throws IOException {
-        int orgSize = dis.readInt();
-        List<Organization> organizations = new ArrayList<>();
-        for (int i = 0; i < orgSize; i++) {
-            String name = dis.readUTF();
-            String url = dis.readUTF();
-            if (url.equals("null")) {
-                url = null;
-            }
-            Link homePage = new Link(name, url);
-            List<Organization.Position> positions = new ArrayList<>();
-            int posSize = dis.readInt();
-            for (int j = 0; j < posSize; j++) {
-                LocalDate startDate = LocalDate.parse(dis.readUTF());
-                LocalDate endDate = LocalDate.parse(dis.readUTF());
-                String title = dis.readUTF();
-                String description = dis.readUTF();
-                if (description.equals("null")) {
-                    description = null;
-                }
-                positions.add(new Organization.Position(startDate, endDate, title, description));
-            }
-            organizations.add(new Organization(homePage, positions));
-        }
-        return organizations;
-    }
-
-    private <T> void writeWithException(Collection<T> collection, DataOutputStream dos, ExcConsumer<T> action) throws IOException{
+    private <T> void writeWithException(Collection<T> collection, DataOutputStream dos, DataWriter<T> action) throws IOException{
         Objects.requireNonNull(action);
         for (T item : collection) {
             action.accept(item);
         }
 
     }
+
+    private <T> List<T> readWithException(DataInputStream dis, DataReader<T> dataReader) throws IOException {
+        Objects.requireNonNull(dataReader);
+        int size = dis.readInt();
+        List<T> list = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            list.add(dataReader.get());
+        }
+        return list;
+    }
 }
 
 @FunctionalInterface
-interface ExcConsumer<T> {
+interface DataWriter<T> {
     void accept(T t) throws IOException;
 }
+
+@FunctionalInterface
+interface DataReader<T> {
+    T get() throws IOException;
+}
+
+
 
