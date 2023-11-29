@@ -2,13 +2,15 @@ package ru.javawebinar.basejava;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MainConcurrency {
     public static final int THREADS_NUMBER = 10000;
     private int counter;
-    private static final Object LOCK = new Object();
+//    private static final Object LOCK = new Object();
+    private static final Lock lock = new ReentrantLock();
 
     public static void main(String[] args) throws InterruptedException {
         System.out.println(Thread.currentThread().getName());
@@ -41,17 +43,23 @@ public class MainConcurrency {
 
         final MainConcurrency mainConcurrency = new MainConcurrency();
         CountDownLatch latch = new CountDownLatch(THREADS_NUMBER);
-        //List<Thread> threads = new ArrayList<>(THREADS_NUMBER);
+        ExecutorService executorService = Executors.newCachedThreadPool();
+//        CompletionService completionService = new ExecutorCompletionService(executorService);
+
+//        List<Thread> threads = new ArrayList<>(THREADS_NUMBER);
 
         for (int i = 0; i < THREADS_NUMBER; i++) {
-            Thread thread = new Thread(() -> {
+            Future<Integer> future = executorService.submit(() -> {
+//            Thread thread = new Thread(() -> {
                 for (int j = 0; j < 100; j++) {
                     mainConcurrency.inc();
-                    latch.countDown();
                 }
+                latch.countDown();
+                return 5;
             });
-            thread.start();
-            //threads.add(thread);
+            System.out.println(future.isDone());
+//            thread.start();
+//            threads.add(thread);
         }
 
 /*        threads.forEach(t -> {
@@ -62,13 +70,16 @@ public class MainConcurrency {
             }
         });*/
         latch.await(10, TimeUnit.SECONDS);
+        executorService.shutdown();
         System.out.println(mainConcurrency.counter);
     }
 
-    private synchronized void inc() {
+    private void inc() {
 //        synchronized (this) {
 //        synchronized (MainConcurrency.class) {
+        lock.lock();
         counter++;
+        lock.unlock();
 //                wait();
 //                readFile
 //                ...
