@@ -1,14 +1,14 @@
 package ru.javawebinar.basejava;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class MainConcurrency {
     public static final int THREADS_NUMBER = 10000;
     private int counter;
+    private final AtomicInteger atomicCounter = new AtomicInteger();
 //    private static final Object LOCK = new Object();
     private static final Lock lock = new ReentrantLock();
 
@@ -57,7 +57,7 @@ public class MainConcurrency {
                 latch.countDown();
                 return 5;
             });
-            System.out.println(future.isDone());
+//            System.out.println(future.isDone());
 //            thread.start();
 //            threads.add(thread);
         }
@@ -71,15 +71,20 @@ public class MainConcurrency {
         });*/
         latch.await(10, TimeUnit.SECONDS);
         executorService.shutdown();
-        System.out.println(mainConcurrency.counter);
+//        System.out.println(mainConcurrency.counter);
+        System.out.println(mainConcurrency.atomicCounter.get());
     }
 
     private void inc() {
 //        synchronized (this) {
 //        synchronized (MainConcurrency.class) {
-        lock.lock();
-        counter++;
-        lock.unlock();
+//        lock.lock();
+//        try {
+        atomicCounter.incrementAndGet();
+//            counter++;
+//        } finally {
+//            lock.unlock();
+//        }
 //                wait();
 //                readFile
 //                ...
