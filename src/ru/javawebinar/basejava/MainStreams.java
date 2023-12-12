@@ -1,6 +1,5 @@
 package ru.javawebinar.basejava;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,11 +21,10 @@ public class MainStreams {
     }
 
     public static List<Integer> oddOrEven(List<Integer> integers) {
-        int sum = integers.stream()
-                .reduce(Integer::sum)
-                .get();
+        boolean oddOrEvenSum = integers.stream()
+                .reduce(0, Integer::sum) % 2 == 0;
         return integers.stream()
-                .filter(x -> sum % 2 == 0 && x % 2 == 0 || sum % 2 != 0 && x % 2 != 0)
+                .filter(x -> oddOrEvenSum && x % 2 == 0 || !oddOrEvenSum && x % 2 != 0)
                 .collect(Collectors.toList());
     }
 }
