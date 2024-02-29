@@ -4,6 +4,7 @@ import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.exception.StorageException;
 import ru.javawebinar.basejava.model.Resume;
 import ru.javawebinar.basejava.sql.ConnectionFactory;
+import ru.javawebinar.basejava.sql.SqlHelper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,12 +21,15 @@ public class SqlStorage implements Storage {
 
     @Override
     public void clear() {
-        try (Connection conn = connectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement("DELETE FROM resume")) {
+        new SqlHelper(connectionFactory).execute("DELETE FROM resume", (ps) -> {
             ps.execute();
-        } catch (SQLException e) {
-            throw new StorageException(e);
-        }
+        });
+//        try (Connection conn = connectionFactory.getConnection();
+//             PreparedStatement ps = conn.prepareStatement("DELETE FROM resume")) {
+//
+//        } catch (SQLException e) {
+//            throw new StorageException(e);
+//        }
     }
 
     @Override

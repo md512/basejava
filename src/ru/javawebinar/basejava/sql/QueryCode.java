@@ -1,4 +1,7 @@
 package ru.javawebinar.basejava.sql;
 
-public interface QueryCode {
+import java.sql.PreparedStatement;
+
+public interface QueryCode<T> {
+    T execute(PreparedStatement ps);
 }
