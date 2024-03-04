@@ -28,7 +28,7 @@ public class SqlStorage implements Storage {
     @Override
     public void update(Resume r) {
         sqlHelper.execute("UPDATE resume SET full_name=? WHERE uuid=?", (ps) -> {
-            if(get(r.getUuid()) == null) {
+            if (get(r.getUuid()) == null) {
                 throw new NotExistStorageException(r.getUuid());
             }
             ps.setString(1, r.getFullName());
@@ -85,10 +85,7 @@ public class SqlStorage implements Storage {
     public int size() {
         return sqlHelper.execute("SELECT COUNT(*) AS row_count FROM resume", (ps) -> {
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("row_count");
-            }
-            return 0;
+            return rs.next() ? rs.getInt("row_count") : 0;
         });
     }
 }
