@@ -20,12 +20,7 @@ public class SqlHelper {
              PreparedStatement ps = conn.prepareStatement(query)) {
             return queryCode.execute(ps);
         } catch (SQLException e) {
-            if (e.getSQLState().equals("23505")) {
-                int startMessageIndex = e.getMessage().indexOf("(uuid)=(") + 8;
-                String wrongUuid = e.getMessage().substring(startMessageIndex, startMessageIndex + 36).trim();
-                throw new ExistStorageException(wrongUuid);
-            }
-            throw new StorageException(e);
+            throw ExceptionUtil.convertException(e);
         }
     }
 }
