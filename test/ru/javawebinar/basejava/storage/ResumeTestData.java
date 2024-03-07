@@ -7,9 +7,9 @@ import java.time.Month;
 public class ResumeTestData {
     public static Resume fill(String uuid, String fullName) {
         Resume resume = new Resume(uuid, fullName);
-    /*    resume.addContact(ContactType.EMAIL, "mail1@ya.ru");
+        resume.addContact(ContactType.EMAIL, "mail1@ya.ru");
         resume.addContact(ContactType.PHONE, "11111");
-        resume.addSection(SectionType.OBJECTIVE, new TextSection("Objective1"));
+    /*    resume.addSection(SectionType.OBJECTIVE, new TextSection("Objective1"));
         resume.addSection(SectionType.PERSONAL, new TextSection("Personal data"));
         resume.addSection(SectionType.ACHIEVEMENT, new ListSection("Achivment11", "Achivment12", "Achivment13"));
         resume.addSection(SectionType.QUALIFICATIONS, new ListSection("Java", "SQL", "JavaScript"));
