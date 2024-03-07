@@ -6,9 +6,7 @@ import ru.javawebinar.basejava.model.Resume;
 import ru.javawebinar.basejava.sql.SqlHelper;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SqlStorage implements Storage {
     private final SqlHelper sqlHelper;
@@ -33,13 +31,10 @@ public class SqlStorage implements Storage {
                 }
             }
             try (PreparedStatement ps = conn.prepareStatement("DELETE FROM contact WHERE resume_uuid=?")) {
-                for (Map.Entry<ContactType, String> e : r.getContacts().entrySet()) {
-                    ps.setString(1, r.getUuid());
-                    ps.addBatch();
-                }
-                ps.executeBatch();
+                ps.setString(1, r.getUuid());
+                ps.execute();
             }
-            setContacts(conn, r);
+            saveContacts(conn, r);
             return null;
         });
     }
@@ -52,7 +47,7 @@ public class SqlStorage implements Storage {
                 ps.setString(2, r.getFullName());
                 ps.execute();
             }
-            setContacts(conn, r);
+            saveContacts(conn, r);
             return null;
         });
     }
@@ -60,25 +55,22 @@ public class SqlStorage implements Storage {
     @Override
     public Resume get(String uuid) {
         return sqlHelper.execute("" +
-                        "    SELECT * FROM resume r " +
-                        " LEFT JOIN contact c " +
-                        "        ON r.uuid = c.resume_uuid " +
-                        "     WHERE r.uuid =? ",
-                ps -> {
-                    ps.setString(1, uuid);
-                    ResultSet rs = ps.executeQuery();
-                    if (!rs.next()) {
-                        throw new NotExistStorageException(uuid);
-                    }
-                    Resume r = new Resume(uuid, rs.getString("full_name"));
-                    getContacts(rs, r);
-//                    do {
-//                        String value = rs.getString("value");
-//                        ContactType type = ContactType.valueOf(rs.getString("type"));
-//                        r.addContact(type, value);
-//                    } while (rs.next());
-                    return r;
-                });
+                "    SELECT * FROM resume r " +
+                " LEFT JOIN contact c " +
+                "        ON r.uuid = c.resume_uuid " +
+                "     WHERE r.uuid =? ", ps -> {
+            ps.setString(1, uuid);
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                throw new NotExistStorageException(uuid);
+            }
+            Resume r = new Resume(uuid, rs.getString("full_name"));
+
+            do {
+                getContacts(rs, r);
+            } while (rs.next());
+            return r;
+        });
     }
 
     @Override
@@ -95,25 +87,25 @@ public class SqlStorage implements Storage {
     @Override
     public List<Resume> getAllSorted() {
         return sqlHelper.execute("" +
-                        "     SELECT * FROM resume r" +
-                        "  LEFT JOIN contact c " +
-                        "         ON r.uuid = c.resume_uuid " +
-                        "   ORDER BY full_name, uuid",
-                (ps) -> {
-                    ResultSet rs = ps.executeQuery();
-                    List<Resume> resumes = new ArrayList<>();
-                    List<String> uuids = new ArrayList<>();
-                    while (rs.next()) {
-                        String uuid = rs.getString("uuid");
-                        if (!uuids.contains(uuid)) {
-                            Resume r = new Resume(uuid, rs.getString("full_name"));
-                            getContacts(rs, r);
-                            resumes.add(r);
-                            uuids.add(uuid);
-                        }
-                    }
-                    return resumes;
-                });
+                "     SELECT * FROM resume r" +
+                "  LEFT JOIN contact c " +
+                "         ON r.uuid = c.resume_uuid " +
+                "   ORDER BY full_name, uuid", (ps) -> {
+            ResultSet rs = ps.executeQuery();
+            Map<String, Resume> resumes = new LinkedHashMap<>();
+            while (rs.next()) {
+                String uuid = rs.getString("uuid");
+                Resume r;
+                if (resumes.containsKey(uuid)) {
+                    r = resumes.get(uuid);
+                } else {
+                    r = new Resume(uuid, rs.getString("full_name"));
+                }
+                getContacts(rs, r);
+                resumes.put(uuid, r);
+            }
+            return new ArrayList<>(resumes.values());
+        });
     }
 
     @Override
@@ -124,7 +116,16 @@ public class SqlStorage implements Storage {
         });
     }
 
-    public void setContacts(Connection conn, Resume r) throws SQLException {
+    private void getContacts(ResultSet rs, Resume r) throws SQLException {
+        String value = rs.getString("value");
+        String contactType = rs.getString("type");
+        if (value != null || contactType != null) {
+            ContactType type = ContactType.valueOf(contactType);
+            r.addContact(type, value);
+        }
+    }
+
+    private void saveContacts(Connection conn, Resume r) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement("INSERT INTO contact (resume_uuid, type, value) VALUES (?,?,?)")) {
             for (Map.Entry<ContactType, String> e : r.getContacts().entrySet()) {
                 ps.setString(1, r.getUuid());
@@ -134,15 +135,5 @@ public class SqlStorage implements Storage {
             }
             ps.executeBatch();
         }
-    }
-
-    public void getContacts (ResultSet rs, Resume r) throws SQLException {
-        do {
-            if (rs.getString("resume_uuid").equals(r.getUuid())) {
-                String value = rs.getString("value");
-                ContactType type = ContactType.valueOf(rs.getString("type"));
-                r.addContact(type, value);
-            }
-        } while (rs.next());
     }
 }
