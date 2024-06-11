@@ -3,6 +3,7 @@ package ru.javawebinar.basejava.storage;
 import ru.javawebinar.basejava.exception.NotExistStorageException;
 import ru.javawebinar.basejava.model.*;
 import ru.javawebinar.basejava.sql.SqlHelper;
+import ru.javawebinar.basejava.util.JsonParser;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -14,6 +15,11 @@ public class SqlStorage implements Storage {
     private final SqlHelper sqlHelper;
 
     public SqlStorage(String dbUrl, String dbUser, String dbPassword) {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e);
+        }
         sqlHelper = new SqlHelper(() -> DriverManager.getConnection(dbUrl, dbUser, dbPassword));
     }
 
@@ -88,7 +94,6 @@ public class SqlStorage implements Storage {
                     addSection(rs, r);
                 }
             }
-
             return r;
         });
     }
@@ -131,7 +136,6 @@ public class SqlStorage implements Storage {
                     addSection(rs, r);
                 }
             }
-
             return new ArrayList<>(resumes.values());
         });
     }
@@ -154,21 +158,11 @@ public class SqlStorage implements Storage {
     }
 
     private void addSection(ResultSet rs, Resume r) throws SQLException {
-        SectionType type = SectionType.valueOf(rs.getString("type"));
-        Section section = null;
-        switch (type) {
-            case OBJECTIVE:
-            case PERSONAL:
-                section = new TextSection(rs.getString("value"));
-                break;
-            case ACHIEVEMENT:
-            case QUALIFICATIONS:
-                section = new ListSection(rs.getString("value").split("\n"));
-                break;
-            default:
-                break;
+        String content = rs.getString("value");
+        if (content != null) {
+            SectionType type = SectionType.valueOf(rs.getString("type"));
+            r.addSection(type, JsonParser.read(content, Section.class));
         }
-        r.addSection(type, section);
     }
 
     private void insertContacts(Connection conn, Resume r) throws SQLException {
@@ -188,18 +182,8 @@ public class SqlStorage implements Storage {
             for (Map.Entry<SectionType, Section> e : r.getSections().entrySet()) {
                 ps.setString(1, r.getUuid());
                 ps.setString(2, e.getKey().name());
-                switch (e.getKey()) {
-                    case OBJECTIVE:
-                    case PERSONAL:
-                        ps.setString(3, e.getValue().toString());
-                        break;
-                    case ACHIEVEMENT:
-                    case QUALIFICATIONS:
-                        ps.setString(3, String.join("\n", ((ListSection) e.getValue()).getItems()));
-                        break;
-                    default:
-                        break;
-                }
+                Section section = e.getValue();
+                ps.setString(3, JsonParser.write(section, Section.class));
                 ps.addBatch();
             }
             ps.executeBatch();
